@@ -1,5 +1,5 @@
 name: 'Telegram Notification'
-description: 'Send Telegram notification (analog of after_script)'
+description: 'Send Telegram notification'
 inputs:
   job_name:
     description: 'Name of the job'
