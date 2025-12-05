@@ -11,7 +11,7 @@ jobs:
     - run: |
         cd src/cat && make clang_n || exit 1
         cd ../grep && make clang_n || exit 1
-    - uses: .github/actions/telegram-notify
+    - uses: ./.github/actions/telegram-notify@develop
       if: always()
       with:
         job_name: code_style
@@ -28,10 +28,10 @@ jobs:
         mkdir -p build
         make
         cp s21_cat build/s21_cat
-    - uses: .github/actions/telegram-notify
+    - uses: ./.github/actions/telegram-notify@develop
       if: always()
       with:
-        job_name: code_style
+        job_name: build-cat
         job_status: ${{ job.status }}
 
   build-grep:
@@ -45,10 +45,10 @@ jobs:
         mkdir -p build
         make
         cp s21_grep build/s21_grep
-    - uses: .github/actions/telegram-notify
+    - uses: ./.github/actions/telegram-notify@develop
       if: always()
       with:
-        job_name: code_style
+        job_name: build-grep
         job_status: ${{ job.status }}
 
   test-cat:
@@ -60,10 +60,10 @@ jobs:
     - run: |
         cd src/cat
         make test || exit 1
-    - uses: .github/actions/telegram-notify
+    - uses: ./.github/actions/telegram-notify@develop
       if: always()
       with:
-        job_name: code_style
+        job_name: test-cat
         job_status: ${{ job.status }}
 
   test-grep:
@@ -75,8 +75,8 @@ jobs:
     - run: |
         cd src/grep
         make test || exit 1
-    - uses: .github/actions/telegram-notify
+    - uses: ./.github/actions/telegram-notify@develop
       if: always()
       with:
-        job_name: code_style
+        job_name: test-grep
         job_status: ${{ job.status }}
