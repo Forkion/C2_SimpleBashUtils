@@ -1,0 +1,22 @@
+name: 'Telegram Notification'
+description: 'Send Telegram notification (analog of after_script)'
+inputs:
+  job_name:
+    description: 'Name of the job'
+    required: true
+    type: string
+  job_status:
+    description: 'Status of the job'
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+    - name: Send Telegram notification
+      shell: bash
+      run: |
+        source /home/leonmari/.telegram_vars
+        curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
+          -d chat_id="$TELEGRAM_CHAT_ID" \
+          -d text="Job: ${{ inputs.job_name }} - Status: ${{ inputs.job_status }}"
