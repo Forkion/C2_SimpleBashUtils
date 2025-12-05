@@ -1,0 +1,155 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # для ручного запуска deploy
+
+env:
+  # Переменные для Telegram (хранить в Secrets!)
+  TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+  TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
+jobs:
+  code-style:
+    runs-on: self-hosted  # или ubuntu-latest для GitHub-hosted
+    name: Code Style Check
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Check cat code style
+      run: |
+        cd src/cat
+        make clang_n || exit 1
+
+    - name: Check grep code style
+      run: |
+        cd src/grep
+        make clang_n || exit 1
+
+    - name: Send Telegram notification
+      if: always()  # отправлять даже при ошибке
+      run: |
+        curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
+          -d chat_id="$TELEGRAM_CHAT_ID" \
+          -d text="Job: Code Style - Status: ${{ job.status }}"
+
+  build-cat:
+    runs-on: self-hosted
+    name: Build Cat
+    needs: code-style  # зависимость от code-style
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Build cat
+      run: |
+        cd src/cat
+        mkdir -p build
+        make
+        cp s21_cat build/s21_cat
+        ls -la build/
+
+    - name: Upload cat artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: cat-build
+        path: src/cat/build/
+        retention-days: 30
+
+  build-grep:
+    runs-on: self-hosted
+    name: Build Grep
+    needs: code-style
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Build grep
+      run: |
+        cd src/grep
+        mkdir -p build
+        make
+        cp s21_grep build/s21_grep
+        ls -la build/
+
+    - name: Upload grep artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: grep-build
+        path: src/grep/build/
+        retention-days: 30
+
+  test-cat:
+    runs-on: self-hosted
+    name: Test Cat
+    needs: build-cat  # зависит от сборки cat
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Download cat artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: cat-build
+
+    - name: Run cat tests
+      run: |
+        cp s21_cat src/cat/s21_cat
+        cd src/cat
+        make test || exit 1
+
+  test-grep:
+    runs-on: self-hosted
+    name: Test Grep
+    needs: build-grep
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Download grep artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: grep-build
+
+    - name: Run grep tests
+      run: |
+        cp s21_grep src/grep/s21_grep
+        cd src/grep
+        make test || exit 1
+
+  deploy:
+    runs-on: self-hosted
+    name: Deploy
+    needs: [test-cat, test-grep]  # зависит от обоих тестов
+    if: github.event_name == 'workflow_dispatch'  # ручной запуск
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Download artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: cat-build
+        path: src/cat/build/
+
+    - name: Download grep artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: grep-build
+        path: src/grep/build/
+
+    - name: Deploy
+      run: |
+        chmod +x src/deploy.sh
+        bash src/deploy.sh
+
+    - name: Send Telegram notification
+      if: always()
+      run: |
+        curl -s -X POST "https://api.telegram.org/bot${{ env.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+          -d chat_id="${{ env.TELEGRAM_CHAT_ID }}" \
+          -d text="Job: Deploy - Status: ${{ job.status }}"
