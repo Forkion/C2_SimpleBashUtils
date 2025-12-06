@@ -11,7 +11,7 @@ jobs:
     - run: |
         cd src/cat && make clang_n || exit 1
         cd ../grep && make clang_n || exit 1
-    - uses: Forkion/C2_SimpleBashUtils/.github/actions/telegram-notify
+    - uses: Forkion/C2_SimpleBashUtils/.github/actions/telegram-notify@develop
       if: always()
       with:
         job_name: code_style
@@ -31,7 +31,7 @@ jobs:
         name: copy-cat-binary
         path: src/cat/s21_cat
         retention-days: 1
-    - uses: Forkion/C2_SimpleBashUtils/.github/actions/telegram-notify  # 3 uses
+    - uses: Forkion/C2_SimpleBashUtils/.github/actions/telegram-notify@develop  # 3 uses
       if: always()
       with:
         job_name: build-cat
@@ -51,7 +51,7 @@ jobs:
         name: copy-grep-binary
         path: src/grep/s21_grep
         retention-days: 1
-    - uses: Forkion/C2_SimpleBashUtils/.github/actions/telegram-notify  # 3 uses
+    - uses: Forkion/C2_SimpleBashUtils/.github/actions/telegram-notify@develop  # 3 uses
       if: always()
       with:
         job_name: build-grep
@@ -70,7 +70,7 @@ jobs:
     - run: |
         cd src/cat
         make test || exit 1
-    - uses: Forkion/C2_SimpleBashUtils/.github/actions/telegram-notify
+    - uses: Forkion/C2_SimpleBashUtils/.github/actions/telegram-notify@develop
       if: always()
       with:
         job_name: test-cat
@@ -89,7 +89,7 @@ jobs:
     - run: |
         cd src/grep
         make test || exit 1
-    - uses: Forkion/C2_SimpleBashUtils/.github/actions/telegram-notify
+    - uses: Forkion/C2_SimpleBashUtils/.github/actions/telegram-notify@develop
       if: always()
       with:
         job_name: test-grep
