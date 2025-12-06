@@ -69,6 +69,7 @@ jobs:
         path: src/cat/
     - run: |
         cd src/cat
+        chmod +x s21_cat
         make test || exit 1
     - uses: Forkion/C2_SimpleBashUtils/.github/actions/telegram-notify@develop
       if: always()
@@ -88,6 +89,7 @@ jobs:
         path: src/grep/
     - run: |
         cd src/grep
+        chmod +x s21_grep
         make test || exit 1
     - uses: Forkion/C2_SimpleBashUtils/.github/actions/telegram-notify@develop
       if: always()
