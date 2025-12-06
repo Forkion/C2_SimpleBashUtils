@@ -11,7 +11,7 @@ jobs:
     - run: |
         cd src/cat && make clang_n || exit 1
         cd ../grep && make clang_n || exit 1
-    - uses: Forkion/C2_SimpleBashUtils/.github/actions/telegram-notify@develop
+    - uses: Forkion/C2_SimpleBashUtils/.github/actions/telegram-notify
       if: always()
       with:
         job_name: code_style
@@ -22,13 +22,16 @@ jobs:
     name: Build cat
     needs: code-style
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v4  # 1 uses
     - run: |
         cd src/cat
-        mkdir -p build
         make
-        cp s21_cat build/s21_cat
-    - uses: Forkion/C2_SimpleBashUtils/.github/actions/telegram-notify@develop
+    - uses: actions/upload-artifact@v4  # 2 uses
+      with:
+        name: copy-cat-binary
+        path: src/cat/s21_cat
+        retention-days: 1
+    - uses: Forkion/C2_SimpleBashUtils/.github/actions/telegram-notify  # 3 uses
       if: always()
       with:
         job_name: build-cat
@@ -39,13 +42,16 @@ jobs:
     name: Build grep
     needs: code-style
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v4 # 1 uses
     - run: |
         cd src/grep
-        mkdir -p build
         make
-        cp s21_grep build/s21_grep
-    - uses: Forkion/C2_SimpleBashUtils/.github/actions/telegram-notify@develop
+    - uses: actions/upload-artifact@v4  # 2 uses
+      with:
+        name: copy-grep-binary
+        path: src/grep/s21_grep
+        retention-days: 1
+    - uses: Forkion/C2_SimpleBashUtils/.github/actions/telegram-notify  # 3 uses
       if: always()
       with:
         job_name: build-grep
@@ -57,10 +63,14 @@ jobs:
     needs: build-cat
     steps:
     - uses: actions/checkout@v4
+    - uses: actions/download-artifact@v4
+      with:
+        name: copy-cat-binary
+        path: src/cat/
     - run: |
         cd src/cat
         make test || exit 1
-    - uses: Forkion/C2_SimpleBashUtils/.github/actions/telegram-notify@develop
+    - uses: Forkion/C2_SimpleBashUtils/.github/actions/telegram-notify
       if: always()
       with:
         job_name: test-cat
@@ -72,10 +82,14 @@ jobs:
     needs: build-grep
     steps:
     - uses: actions/checkout@v4
+    - uses: actions/download-artifact@v4
+      with:
+        name: copy-grep-binary
+        path: src/grep/
     - run: |
         cd src/grep
         make test || exit 1
-    - uses: Forkion/C2_SimpleBashUtils/.github/actions/telegram-notify@develop
+    - uses: Forkion/C2_SimpleBashUtils/.github/actions/telegram-notify
       if: always()
       with:
         job_name: test-grep
