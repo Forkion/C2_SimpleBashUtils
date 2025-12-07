@@ -4,6 +4,7 @@ FROM ubuntu:22.04
 RUN apt-get update && apt-get install -y \
     gcc \
     make \
+	lcov \
 	clang && \
 	rm -rf /var/lib/apt/lists/* && \
 	mkdir -p /app/src/cat /app/src/grep && chmod 777 /app/src/cat /app/src/grep && \
@@ -22,4 +23,3 @@ WORKDIR /app/src/
 USER appuser
 
 HEALTHCHECK NONE
-
